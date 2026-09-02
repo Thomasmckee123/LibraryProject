@@ -1,13 +1,27 @@
 package com.example;
 
+import java.util.Objects;
+
+/**
+ * Stage 1: title, author, isbn, and borrow state.
+ *
+ * <p>Two books are considered equal when they share an ISBN.
+ */
 public class Book {
-    // Stage 1: title, author, isbn, and borrow state.
+
     private String title;
     private String author;
-    private String isbn;
+    private final String isbn;
     private boolean isBorrowed;
 
+    public Book(String title, String author, String isbn) {
+        this(title, author, isbn, false);
+    }
+
     public Book(String title, String author, String isbn, boolean isBorrowed) {
+        if (isbn == null || isbn.isBlank()) {
+            throw new IllegalArgumentException("isbn must not be blank");
+        }
         this.title = title;
         this.author = author;
         this.isbn = isbn;
@@ -30,21 +44,37 @@ public class Book {
         return isBorrowed;
     }
 
-    public String setTitle(String title) {
+    public void setTitle(String title) {
         this.title = title;
-        return title;
-    }
-    public String setAuthour(String author) {
-        this.author = author;
-        return author;
-    }
-    public String setIsbn(String isbn) {
-        this.isbn = isbn;
-        return isbn;
-    }
-    public boolean setIsBorrowed(boolean isBorrowed){
-        this.isBorrowed = isBorrowed;
-        return isBorrowed;
     }
 
+    public void setAuthor(String author) {
+        this.author = author;
+    }
+
+    public void setBorrowed(boolean isBorrowed) {
+        this.isBorrowed = isBorrowed;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof Book other)) {
+            return false;
+        }
+        return isbn.equals(other.isbn);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(isbn);
+    }
+
+    @Override
+    public String toString() {
+        return "Book{title='" + title + "', author='" + author
+                + "', isbn='" + isbn + "', borrowed=" + isBorrowed + "}";
+    }
 }
