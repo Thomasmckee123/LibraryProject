@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { Cart, CartLine } from "../types";
-import { addItem, getCart, removeItem } from "../api/cart";
+import { getCart, removeItem, setQuantity } from "../api/cart";
 import { formatPrice } from "../api/money";
 import EmptyState from "../components/EmptyState";
 import QuantityStepper from "../components/QuantityStepper";
@@ -98,15 +98,13 @@ interface CartRowProps {
  * One cart line with its own mutation state, so adjusting one book's
  * quantity doesn't disable the controls on every other line.
  *
- * There is no "set quantity" endpoint on the API - only addItem (which
- * merges a quantity into the existing line) and removeItem (which drops
- * the line entirely). The stepper's target quantity is converted to a
- * delta and sent through addItem; going to zero is handled as an explicit
- * remove instead, never as a delta.
+ * The stepper sends an absolute quantity via setQuantity. It must not send
+ * a delta through addItem: a decrease has no positive delta, and the
+ * backend rejects a negative quantity with 400.
  */
 function CartRow({ cartId, line, onMutated }: CartRowProps) {
   const quantityMutation = useMutation({
-    mutationFn: (delta: number) => addItem(cartId, line.isbn, delta),
+    mutationFn: (quantity: number) => setQuantity(cartId, line.isbn, quantity),
     onSuccess: onMutated,
   });
 
@@ -133,7 +131,7 @@ function CartRow({ cartId, line, onMutated }: CartRowProps) {
             quantity={line.quantity}
             label={line.title}
             disabled={pending}
-            onChange={(next) => quantityMutation.mutate(next - line.quantity)}
+            onChange={(next) => quantityMutation.mutate(next)}
           />
         </td>
         <td className="price">{formatPrice(line.lineTotal)}</td>

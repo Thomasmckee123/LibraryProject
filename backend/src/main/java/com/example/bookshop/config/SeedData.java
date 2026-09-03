@@ -2,6 +2,8 @@ package com.example.bookshop.config;
 
 import com.example.bookshop.book.Book;
 import com.example.bookshop.book.BookRepository;
+import com.example.bookshop.cart.Cart;
+import com.example.bookshop.cart.CartRepository;
 import com.example.bookshop.customer.Customer;
 import com.example.bookshop.customer.CustomerRepository;
 import org.springframework.boot.CommandLineRunner;
@@ -20,7 +22,8 @@ import java.util.List;
 public class SeedData {
 
     @Bean
-    CommandLineRunner seed(BookRepository books, CustomerRepository customers) {
+    CommandLineRunner seed(BookRepository books, CustomerRepository customers,
+                           CartRepository carts) {
         return args -> {
             if (books.count() > 0) {
                 return;
@@ -40,7 +43,11 @@ public class SeedData {
                     new Book("9780156012195", "The Little Prince", "Antoine de Saint-Exupery", new BigDecimal("7.99"), 25),
                     new Book("9781400079988", "Anna Karenina", "Leo Tolstoy", new BigDecimal("12.00"), 6)));
 
-            customers.save(new Customer("Thomas McKee", "thomas@example.com"));
+            Customer customer = customers.save(new Customer("Thomas McKee", "thomas@example.com"));
+
+            // The storefront has no auth yet and hardcodes cart id 1, so one
+            // open cart must exist or every cart page 404s on first load.
+            carts.save(new Cart(customer));
         };
     }
 }
