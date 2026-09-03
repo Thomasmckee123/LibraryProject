@@ -28,3 +28,17 @@
 .status--error {
   color: var(--bad);
 }
+
+.added {
+  margin-top: 1rem;
+  font-family: system-ui, sans-serif;
+  font-size: 0.9rem;
+  color: var(--good);
+}
+
+.addError {
+  margin-top: 1rem;
+  font-family: system-ui, sans-serif;
+  font-size: 0.9rem;
+  color: var(--bad);
+}

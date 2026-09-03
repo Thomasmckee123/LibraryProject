@@ -38,10 +38,10 @@ class CartControllerTest {
         mockMvc.perform(get("/api/carts/1"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(1))
-                .andExpect(jsonPath("$.items[0].isbn").value("978-0-13-468599-1"))
-                .andExpect(jsonPath("$.items[0].title").value("Effective Java"))
-                .andExpect(jsonPath("$.items[0].quantity").value(2))
-                .andExpect(jsonPath("$.items[0].lineTotal").value(90.00))
+                .andExpect(jsonPath("$.lines[0].isbn").value("978-0-13-468599-1"))
+                .andExpect(jsonPath("$.lines[0].title").value("Effective Java"))
+                .andExpect(jsonPath("$.lines[0].quantity").value(2))
+                .andExpect(jsonPath("$.lines[0].lineTotal").value(90.00))
                 .andExpect(jsonPath("$.total").value(90.00));
     }
 
@@ -65,8 +65,8 @@ class CartControllerTest {
                         .contentType("application/json")
                         .content("{\"isbn\":\"978-1\",\"quantity\":2}"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.items[0].isbn").value("978-1"))
-                .andExpect(jsonPath("$.items[0].quantity").value(2));
+                .andExpect(jsonPath("$.lines[0].isbn").value("978-1"))
+                .andExpect(jsonPath("$.lines[0].quantity").value(2));
     }
 
     @Test
@@ -92,7 +92,7 @@ class CartControllerTest {
 
         mockMvc.perform(delete("/api/carts/1/items/978-1"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.items").isEmpty());
+                .andExpect(jsonPath("$.lines").isEmpty());
     }
 
     @Test
