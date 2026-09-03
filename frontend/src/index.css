@@ -1,152 +1,70 @@
-/* Foundation styles only: reset, tokens, shell, and shared primitives.
-   Route-specific styling belongs in a CSS module beside the route. */
+@import "tailwindcss";
 
-:root {
-  --ground: #faf9f7;
-  --surface: #ffffff;
-  --ink: #1a1a18;
-  --ink-soft: #4a4a45;
-  --mid: #77776f;
-  --rule: #e2e0da;
-  --accent: #7a3b2e;
-  --accent-soft: #f2e9e6;
-  --good: #2f6f4f;
-  --warn: #9a6b1f;
-  --bad: #8c3a2e;
-  --radius: 3px;
+/* Tailwind v4 is configured here, not in a config file. Every token below
+   becomes a utility automatically: --color-ink gives text-ink, bg-ink,
+   border-ink. Add tokens here rather than hardcoding values in components. */
+@theme {
+  --color-paper: #faf9f7;
+  --color-surface: #ffffff;
+  --color-ink: #1a1a18;
+  --color-ink-soft: #4a4a45;
+  --color-muted: #77776f;
+  --color-rule: #e2e0da;
+  --color-accent: #7a3b2e;
+  --color-accent-soft: #f2e9e6;
+  --color-good: #2f6f4f;
+  --color-warn: #9a6b1f;
+  --color-bad: #8c3a2e;
+
+  --font-serif: "Iowan Old Style", Georgia, "Times New Roman", serif;
+  --font-sans: system-ui, -apple-system, "Segoe UI", sans-serif;
 }
 
+/* Dark mode is redefined at token level, in one place. A component writing
+   dark: variants everywhere has bypassed the system - fix the token. */
 @media (prefers-color-scheme: dark) {
-  :root {
-    --ground: #161614;
-    --surface: #1d1c1a;
-    --ink: #ece9e4;
-    --ink-soft: #c2beb6;
-    --mid: #8d8a82;
-    --rule: #2f2d29;
-    --accent: #cd8574;
-    --accent-soft: #2a1e1a;
-    --good: #6fbe93;
-    --warn: #d6a44f;
-    --bad: #d08272;
+  @theme {
+    --color-paper: #161614;
+    --color-surface: #1d1c1a;
+    --color-ink: #ece9e4;
+    --color-ink-soft: #c2beb6;
+    --color-muted: #8d8a82;
+    --color-rule: #2f2d29;
+    --color-accent: #cd8574;
+    --color-accent-soft: #2a1e1a;
+    --color-good: #6fbe93;
+    --color-warn: #d6a44f;
+    --color-bad: #d08272;
   }
 }
 
-* {
-  box-sizing: border-box;
-}
+@layer base {
+  body {
+    @apply bg-paper text-ink font-serif antialiased;
+  }
 
-body {
-  margin: 0;
-  background: var(--ground);
-  color: var(--ink);
-  font-family: "Iowan Old Style", Georgia, serif;
-  line-height: 1.6;
-  -webkit-font-smoothing: antialiased;
-}
+  h1,
+  h2,
+  h3 {
+    @apply font-serif tracking-tight;
+    text-wrap: balance;
+  }
 
-.shell {
-  max-width: 64rem;
-  margin: 0 auto;
-  padding: 0 1.5rem;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-}
+  :focus-visible {
+    @apply outline-2 outline-offset-2 outline-accent;
+  }
 
-.masthead {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 1.5rem;
-  padding: 2rem 0 1.25rem;
-  border-bottom: 1px solid var(--rule);
-}
-
-.wordmark {
-  font-size: 1.5rem;
-  font-weight: 600;
-  letter-spacing: -0.01em;
-  color: var(--ink);
-  text-decoration: none;
-}
-
-.masthead nav {
-  display: flex;
-  gap: 1.25rem;
-  font-family: system-ui, sans-serif;
-  font-size: 0.9rem;
-}
-
-.masthead nav a,
-a {
-  color: var(--accent);
-}
-
-main {
-  flex: 1;
-  padding: 2.5rem 0 4rem;
-}
-
-footer {
-  padding: 1.5rem 0;
-  border-top: 1px solid var(--rule);
-  font-family: system-ui, sans-serif;
-  font-size: 0.82rem;
-  color: var(--mid);
-}
-
-footer p {
-  margin: 0;
-}
-
-.placeholder {
-  color: var(--mid);
-  font-family: system-ui, sans-serif;
-}
-
-/* Shared primitives - route agents may use these rather than reinventing. */
-
-.stock {
-  font-family: system-ui, sans-serif;
-  font-size: 0.8rem;
-  font-weight: 500;
-}
-.stock--in { color: var(--good); }
-.stock--low { color: var(--warn); }
-.stock--out { color: var(--bad); }
-
-.price {
-  font-variant-numeric: tabular-nums;
-}
-
-button {
-  font: inherit;
-  font-family: system-ui, sans-serif;
-  font-size: 0.9rem;
-  padding: 0.5rem 1rem;
-  border: 1px solid var(--accent);
-  border-radius: var(--radius);
-  background: var(--accent);
-  color: var(--surface);
-  cursor: pointer;
-}
-
-button:disabled {
-  opacity: 0.45;
-  cursor: not-allowed;
-}
-
-button.secondary {
-  background: transparent;
-  color: var(--accent);
-}
-
-:focus-visible {
-  outline: 2px solid var(--accent);
-  outline-offset: 2px;
+  /* Digits that sit in columns should line up. */
+  .tabular {
+    font-variant-numeric: tabular-nums;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  * { animation: none !important; transition: none !important; }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
 }
