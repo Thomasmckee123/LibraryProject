@@ -15,3 +15,6 @@ target/
 # Claude Code personal overrides (hooks config is committed; this is not)
 .claude/settings.local.json
 .claude/pipeline.html
+
+# Agent worktrees - never commit these
+.claude/worktrees/

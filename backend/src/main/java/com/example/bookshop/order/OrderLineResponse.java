@@ -10,7 +10,7 @@ import java.math.BigDecimal;
  */
 public record OrderLineResponse(
         String isbn,
-        String title,
+        String titleAtPurchase,
         BigDecimal unitPrice,
         int quantity,
         BigDecimal lineTotal) {

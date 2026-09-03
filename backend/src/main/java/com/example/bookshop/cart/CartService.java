@@ -4,6 +4,7 @@ import com.example.bookshop.book.Book;
 import com.example.bookshop.book.BookRepository;
 import com.example.bookshop.config.NotFoundException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -15,6 +16,10 @@ import java.util.List;
  * of a book at once. This service never calls {@link Book#reduceStock(int)}.
  * A book with zero stock is refused as a courtesy - reasonable UX, not a
  * reservation - but that check never mutates the book.
+ *
+ * <p>Every method is transactional because {@code Cart.items} is a lazy
+ * collection and {@code open-in-view} is off: the Hibernate session must
+ * still be open when a Cart is mapped to its DTO.
  */
 @Service
 public class CartService {
@@ -27,10 +32,27 @@ public class CartService {
         this.bookRepository = bookRepository;
     }
 
+    @Transactional(readOnly = true)
     public CartResponse getCart(Long cartId) {
         return toResponse(findCart(cartId));
     }
 
+    /**
+     * Sets a line to an absolute quantity.
+     *
+     * <p>{@link #addItem} only adds, so a quantity stepper moving downwards has
+     * no positive delta it can send. Like addItem, this never touches stock.
+     */
+    @Transactional
+    public CartResponse setQuantity(Long cartId, String isbn, SetQuantityRequest request) {
+        Cart cart = findCart(cartId);
+        CartItem item = cart.findItem(isbn)
+                .orElseThrow(() -> NotFoundException.book(isbn));
+        item.setQuantity(request.quantity());
+        return toResponse(cartRepository.save(cart));
+    }
+
+    @Transactional
     public CartResponse addItem(Long cartId, AddItemRequest request) {
         Cart cart = findCart(cartId);
         Book book = bookRepository.findByIsbn(request.isbn())
@@ -45,6 +67,7 @@ public class CartService {
         return toResponse(cart);
     }
 
+    @Transactional
     public CartResponse removeItem(Long cartId, String isbn) {
         Cart cart = findCart(cartId);
         if (!cart.removeItem(isbn)) {

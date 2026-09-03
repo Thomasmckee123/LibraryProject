@@ -91,6 +91,51 @@ class CartServiceTest {
     }
 
     @Test
+    void setQuantityLowersALineWithoutRemovingIt() {
+        cart.addItem(book, 3);
+        when(cartRepository.findById(1L)).thenReturn(Optional.of(cart));
+        when(cartRepository.save(cart)).thenReturn(cart);
+
+        CartResponse response = cartService.setQuantity(1L, book.getIsbn(),
+                new SetQuantityRequest(2));
+
+        assertThat(response.items()).hasSize(1);
+        assertThat(response.items().get(0).quantity()).isEqualTo(2);
+        assertThat(response.total()).isEqualByComparingTo("90.00");
+    }
+
+    @Test
+    void setQuantityRaisesALine() {
+        cart.addItem(book, 1);
+        when(cartRepository.findById(1L)).thenReturn(Optional.of(cart));
+        when(cartRepository.save(cart)).thenReturn(cart);
+
+        CartResponse response = cartService.setQuantity(1L, book.getIsbn(),
+                new SetQuantityRequest(4));
+
+        assertThat(response.items().get(0).quantity()).isEqualTo(4);
+    }
+
+    @Test
+    void setQuantityDoesNotReduceStock() {
+        cart.addItem(book, 3);
+        when(cartRepository.findById(1L)).thenReturn(Optional.of(cart));
+        when(cartRepository.save(cart)).thenReturn(cart);
+
+        cartService.setQuantity(1L, book.getIsbn(), new SetQuantityRequest(1));
+
+        assertThat(book.getStock()).isEqualTo(5);
+    }
+
+    @Test
+    void setQuantityOnABookNotInTheCartThrowsNotFound() {
+        when(cartRepository.findById(1L)).thenReturn(Optional.of(cart));
+
+        assertThrows(NotFoundException.class, () -> cartService.setQuantity(
+                1L, "978-0-00-000000-0", new SetQuantityRequest(2)));
+    }
+
+    @Test
     void addItemDoesNotReduceStock() {
         when(cartRepository.findById(1L)).thenReturn(Optional.of(cart));
         when(bookRepository.findByIsbn(book.getIsbn())).thenReturn(Optional.of(book));
