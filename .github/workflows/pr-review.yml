@@ -1,0 +1,83 @@
+name: PR Review
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+# Cancel superseded runs when a PR is pushed to again.
+concurrency:
+  group: pr-review-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Build and test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: maven
+      - name: mvn test
+        working-directory: library-tracker
+        run: mvn -B test
+
+  review:
+    name: Review (${{ matrix.lens }})
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+      issues: write
+    strategy:
+      # One reviewer per lens, all in parallel. A failing lens must not
+      # cancel the others - partial review beats no review.
+      fail-fast: false
+      matrix:
+        include:
+          - lens: correctness
+            focus: >-
+              Logic errors, null handling, off-by-one, and state that can drift
+              out of sync. Library is the only thing allowed to move a book
+              between the shelf and a Member - flag any path that mutates a
+              Book's borrowed flag or a Member's list outside Library.borrow
+              and Library.returnBook.
+          - lens: tests
+            focus: >-
+              Test quality. Flag assertions that only prove code ran, behavior
+              changed in this diff with no corresponding test, and tests that
+              would still pass if the implementation were deleted. Note missing
+              edge cases: nulls, empty collections, boundary values.
+          - lens: design
+            focus: >-
+              API design and encapsulation. Flag leaked mutable collections,
+              inconsistent return conventions (boolean vs exception for the
+              same class of failure), equals/hashCode contract violations, and
+              names that do not say what the method does.
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Claude review
+        uses: anthropics/claude-code-action@v1
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          claude_args: --model claude-opus-5
+          prompt: >-
+            Review only the changes in this pull request, through one lens:
+            ${{ matrix.lens }}.
+
+            ${{ matrix.focus }}
+
+            This is a small Java 21 / Maven learning project. Report only
+            defects you can point at at a specific file and line, and state the
+            concrete input or sequence that makes each one go wrong. Do not
+            report style preferences, do not restate what the code does, and do
+            not comment on anything outside the diff. If this lens turns up
+            nothing real, say so in one line and stop - a clean result is a
+            valid result.

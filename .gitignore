@@ -11,3 +11,7 @@ target/
 
 # OS
 .DS_Store
+
+# Claude Code personal overrides (hooks config is committed; this is not)
+.claude/settings.local.json
+.claude/pipeline.html
