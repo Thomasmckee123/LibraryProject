@@ -1,5 +1,4 @@
 import type { ReactNode } from "react";
-import styles from "./EmptyState.module.css";
 
 interface EmptyStateProps {
   /** What's missing, in plain language - e.g. "Your cart is empty." */
@@ -15,9 +14,9 @@ interface EmptyStateProps {
  */
 export default function EmptyState({ message, action }: EmptyStateProps) {
   return (
-    <div className={styles.empty}>
-      <p className={styles.message}>{message}</p>
-      {action ? <div className={styles.action}>{action}</div> : null}
+    <div className="flex flex-col items-center gap-3 rounded border border-dashed border-rule py-16 text-center">
+      <p className="font-sans text-sm text-muted">{message}</p>
+      {action ? <div className="font-sans text-sm text-accent">{action}</div> : null}
     </div>
   );
 }

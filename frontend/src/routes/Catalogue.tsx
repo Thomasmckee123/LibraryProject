@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { listBooks } from "../api/books";
 import BookCard from "../components/BookCard";
-import styles from "./Catalogue.module.css";
 
 const DEBOUNCE_MS = 300;
 
@@ -28,31 +27,31 @@ export default function Catalogue() {
   });
 
   return (
-    <section className={styles.page}>
-      <h1>Catalogue</h1>
+    <section className="flex flex-col gap-6">
+      <h1 className="text-4xl font-semibold">Catalogue</h1>
       <input
         type="search"
-        className={styles.search}
+        className="w-full max-w-sm rounded border border-rule bg-surface px-4 py-2.5 font-sans text-sm text-ink placeholder:text-muted focus:border-accent focus:outline-none"
         placeholder="Search by title or author"
         value={searchText}
         onChange={(event) => setSearchText(event.target.value)}
         aria-label="Search books by title or author"
       />
 
-      {isPending && <p className={styles.status}>Loading books...</p>}
+      {isPending && <p className="font-sans text-sm text-muted">Loading books...</p>}
 
       {isError && (
-        <p className={`${styles.status} ${styles["status--error"]}`}>
+        <p className="font-sans text-sm text-bad" role="alert">
           Could not load books: {error instanceof Error ? error.message : "unknown error"}
         </p>
       )}
 
       {!isPending && !isError && books.length === 0 && (
-        <p className={styles.status}>No books match your search.</p>
+        <p className="font-sans text-sm text-muted">No books match your search.</p>
       )}
 
       {!isPending && !isError && books.length > 0 && (
-        <div className={styles.grid}>
+        <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {books.map((book) => (
             <BookCard key={book.isbn} book={book} />
           ))}

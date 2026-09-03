@@ -1,73 +1,134 @@
 # frontend
 
-React storefront for the bookshop. Vite, TypeScript, React Router.
-
-**Nothing here yet.** This file is the plan, not a description.
+React storefront for the bookshop. Vite, TypeScript, React Router, TanStack
+Query, **Tailwind CSS v4**.
 
 ## Stack
 
 | Piece | Choice | Why |
 |---|---|---|
-| Build | Vite | Fast, and the current default for a new React app |
-| Language | TypeScript | Catches the shape mismatches that make API work painful |
-| Routing | React Router | Standard for a multi-page SPA |
-| Data | TanStack Query | Handles caching, loading, and refetch so components don't |
-| Styling | Plain CSS Modules | No framework to learn on top of React itself |
+| Build | Vite 8 | Fast; the current default for React |
+| Language | TypeScript (strict) | Catches the shape mismatches that make API work painful |
+| Routing | React Router 7 | Standard for a multi-page SPA |
+| Data | TanStack Query 5 | Caching, loading, refetch — so components don't |
+| Styling | Tailwind CSS v4 | Utilities in the markup; one design system, no CSS files to drift |
 
-No component library. Buttons and cards are worth writing once by hand when
-you're learning what they're made of.
+No component library. Buttons and cards are worth writing once by hand.
+
+## Tailwind v4 — this is not v3
+
+**There is no `tailwind.config.js`.** v4 is configured in CSS. The theme lives
+in an `@theme` block in `src/index.css`, and the plugin is wired in
+`vite.config.ts` via `@tailwindcss/vite`. If you find yourself reaching for a
+config file or `npx tailwindcss init`, you are following v3 instructions.
+
+```css
+@import "tailwindcss";
+
+@theme {
+  --color-ink: #1a1a18;
+  --color-accent: #7a3b2e;
+}
+```
+
+Every token in `@theme` becomes a utility automatically — `--color-ink` gives
+you `text-ink`, `bg-ink`, `border-ink`. Do not hand-write a utility for a value
+that should be a token.
+
+## Design tokens
+
+Defined once in `src/index.css`. **Never hardcode a colour in a component.**
+
+| Token | Use |
+|---|---|
+| `paper` / `surface` | Page ground, card ground |
+| `ink` / `ink-soft` / `muted` | Primary text, secondary text, captions |
+| `rule` | Borders and dividers |
+| `accent` / `accent-soft` | Brand; links, primary buttons |
+| `good` / `warn` / `bad` | In stock / low stock / out of stock and errors |
+
+Semantic state colours are separate from `accent` and must stay that way — a
+stock warning that renders in the brand colour tells the reader nothing.
+
+Dark mode is handled at token level in one `@media (prefers-color-scheme: dark)`
+block. A component that writes `dark:` variants everywhere has bypassed the
+system; fix the token instead.
 
 ## Layout
 
 ```
 src/
-  main.tsx
-  routes/
-    Catalogue.tsx     browse and search
-    BookDetail.tsx    one book, add to cart
-    Cart.tsx          lines, quantities, total
-    Checkout.tsx      confirm, place order
-    OrderConfirmed.tsx
-  components/         Button, BookCard, QuantityInput, Price
-  api/                client.ts, books.ts, cart.ts, orders.ts — all fetch calls
-  types.ts            mirrors the backend DTOs
+  main.tsx            router + query client, all routes registered here
+  App.tsx             shell: masthead, nav, footer
+  index.css           @theme tokens, base layer, the few real component classes
+  routes/             one file per page
+  components/         reusable pieces
+  api/                every fetch call — client, books, cart, orders, money
+  types.ts            mirrors backend DTOs exactly
 ```
-
-Every `fetch` lives in `api/`. A component that calls `fetch` directly is
-untestable without a network, and the URL ends up duplicated across files.
 
 ## Conventions
 
-**Server state is not component state.** Books, carts, and orders live on
-the server — read them with TanStack Query, don't copy them into
-`useState`. A local copy drifts the moment anything else changes it.
-`useState` is for genuinely local things: which tab is open, what's typed
-in a search box.
+**Every fetch lives in `api/`.** A component calling `fetch` directly is
+untestable without a network and duplicates the URL.
 
-**Money is formatted, never computed.** The backend sends the total. The
-frontend renders it with `Intl.NumberFormat`. Two implementations of the
-same arithmetic will eventually disagree, and the one showing the customer a
-different number is the one that matters.
+**Server state is not component state.** Books, carts, and orders live on the
+server — read them with TanStack Query, never copy into `useState`. `useState`
+is for genuinely local things: a search box's text, whether a panel is open.
 
-**Every fetch has three states.** Loading, error, empty. A page that only
-handles the happy path shows a blank screen the first time the API is slow
-or down.
+**Money is formatted, never computed.** The backend sends every total; render it
+with `formatPrice`. `price` is a **string** on the wire deliberately — it is a
+`BigDecimal` server-side. Never do arithmetic on it. Two implementations of the
+same sum eventually disagree, and the one the customer sees is the one that
+matters.
 
-**Types mirror the API.** `types.ts` matches the backend DTOs exactly. When
-an endpoint changes, that file changes first.
+**Every query handles three states**: loading, error, empty. A page that only
+handles the happy path shows a blank screen the first time the API is slow.
 
-## Prices and stock
+**Types mirror the API.** `types.ts` matches the backend DTOs exactly. JSON is
+cast, not validated, so a field-name mismatch is invisible to `tsc` and shows up
+as `undefined` in the UI — this has already happened twice on this project
+(`items` vs `lines`, `title` vs `titleAtPurchase`). When an endpoint changes,
+change `types.ts` first, then run the e2e suite.
 
-Show stock honestly — "In stock", "Only 2 left", "Out of stock" — and
-disable the add-to-cart control when it's zero. The backend still rejects
-the order, but a button that fails when pressed is a bad experience.
+**Repeated utility strings become a component, not an `@apply`.** If three
+places need the same button, write `<Button>`. `@apply` recreates the CSS-file
+problem Tailwind exists to solve.
 
-Checkout can fail with a 409 when someone else buys the last copy first.
-That is a normal outcome, not a crash: say which book is unavailable and
-let them adjust the cart.
+## Accessibility is not optional
+
+Real `<button>` and `<a>` elements, never a clickable `<div>`. Every icon-only
+control needs an `aria-label`. Status messages use `role="status"`, errors
+`role="alert"` — the e2e suite selects on these, so breaking them breaks the
+build. Keep a visible focus ring; Tailwind's `focus-visible:` variants are
+already set up in the base layer.
+
+## Growing this
+
+The shop is small now and the structure is deliberately flat. Before it gets
+big:
+
+- **Extract a `Button` and `Field` primitive** the moment a third variant
+  appears. Do it before, and you will guess the API wrong.
+- **`api/` stays one file per resource.** When a resource grows past a handful
+  of calls, split by resource, never by verb.
+- **Add a route-level layout** when pages start sharing chrome beyond the
+  masthead — React Router nested routes, not a copied wrapper.
+- **Cart id is hardcoded to 1** in three places (`Cart.tsx`, `Checkout.tsx`,
+  `BookDetail.tsx`). This is the single biggest piece of debt in the frontend.
+  The moment accounts exist, that becomes a session lookup — until then, do not
+  spread the constant any further.
 
 ## Running it
 
-Vite dev server on 5173, API on 8080. Proxy `/api` in `vite.config.ts`
-rather than hardcoding `localhost:8080` — that way the same code works
-when both are served from one origin in production.
+```bash
+npm run dev          # :5173, proxies /api to :8080 — start the backend too
+npm run typecheck
+npm run e2e          # Playwright; starts both servers itself
+npm run e2e:ui       # watch it drive the browser
+```
+
+There are currently **no component unit tests** — only typecheck and 8 e2e
+specs. That is a known gap: e2e is slow and only covers happy paths, so
+threshold logic (`StockBadge` boundaries, `QuantityStepper` flooring at 1) and
+error branches are unproven. Vitest + React Testing Library is the right fix.

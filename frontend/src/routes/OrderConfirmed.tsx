@@ -3,7 +3,6 @@ import { Link, useParams } from "react-router-dom";
 import type { OrderLine } from "../types";
 import { getOrder } from "../api/orders";
 import OrderSummary, { type SummaryLine } from "../components/OrderSummary";
-import styles from "./OrderConfirmed.module.css";
 
 function orderLineToSummaryLine(line: OrderLine): SummaryLine {
   return {
@@ -37,8 +36,8 @@ export default function OrderConfirmed() {
 
   if (!hasValidId) {
     return (
-      <section className={styles.confirmed}>
-        <h1>Order not found</h1>
+      <section className="flex flex-col gap-5">
+        <h1 className="text-4xl font-semibold">Order not found</h1>
         <p className="placeholder">
           &ldquo;{reference}&rdquo; isn&rsquo;t a valid order reference.{" "}
           <Link to="/">Back to the catalogue</Link>
@@ -48,13 +47,13 @@ export default function OrderConfirmed() {
   }
 
   return (
-    <section className={styles.confirmed}>
-      <h1>Order confirmed</h1>
+    <section className="flex flex-col gap-5">
+      <h1 className="text-4xl font-semibold">Order confirmed</h1>
 
       {orderQuery.isPending && <p className="placeholder">Loading your order…</p>}
 
       {orderQuery.isError && (
-        <p className={styles.error} role="alert">
+        <p className="font-sans text-sm text-bad" role="alert">
           Could not load this order: {orderQuery.error.message}
         </p>
       )}
@@ -65,10 +64,10 @@ export default function OrderConfirmed() {
 
       {orderQuery.isSuccess && orderQuery.data.lines.length > 0 && (
         <>
-          <p className={styles.reference}>
+          <p className="tabular rounded border border-rule bg-surface px-4 py-3 font-sans text-lg text-ink">
             Reference <strong>{orderQuery.data.reference}</strong>
           </p>
-          <p className={styles.meta}>
+          <p className="font-sans text-sm text-muted">
             Placed {new Date(orderQuery.data.placedAt).toLocaleString("en-GB")} ·{" "}
             {orderQuery.data.status}
           </p>
@@ -78,7 +77,7 @@ export default function OrderConfirmed() {
             total={orderQuery.data.total}
           />
 
-          <p className={styles.note}>
+          <p className="font-sans text-xs text-muted">
             The prices above are what you were actually charged - they stay
             fixed even if a book&rsquo;s price changes later.
           </p>

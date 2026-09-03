@@ -4,7 +4,6 @@ import type { Cart } from "../types";
 import { api, ApiClientError } from "../api/client";
 import { checkout } from "../api/orders";
 import OrderSummary, { type SummaryLine } from "../components/OrderSummary";
-import styles from "./Checkout.module.css";
 
 // TODO: there is no auth yet, so checkout always acts on this one demo
 // cart. Once customers can log in, this should come from the session
@@ -50,13 +49,13 @@ export default function Checkout() {
   });
 
   return (
-    <section className={styles.checkout}>
-      <h1>Checkout</h1>
+    <section className="flex flex-col gap-6">
+      <h1 className="text-4xl font-semibold">Checkout</h1>
 
       {cartQuery.isPending && <p className="placeholder">Loading your cart…</p>}
 
       {cartQuery.isError && (
-        <p className={styles.error} role="alert">
+        <p className="font-sans text-sm text-bad" role="alert">
           Could not load your cart: {cartQuery.error.message}
         </p>
       )}
@@ -75,7 +74,7 @@ export default function Checkout() {
             total={cartQuery.data.total}
           />
 
-          <p className={styles.simulatedNote}>
+          <p className="rounded border border-rule bg-accent-soft px-4 py-3 font-sans text-sm text-ink-soft">
             This is a learning project: checkout is simulated. No card
             details are collected and no real money moves. Placing the order
             reserves the stock and records it as paid.
@@ -84,7 +83,7 @@ export default function Checkout() {
           {placeOrder.isError &&
             placeOrder.error instanceof ApiClientError &&
             placeOrder.error.isOutOfStock && (
-              <div className={styles.outOfStock} role="alert">
+              <div className="flex flex-col gap-2 rounded border border-bad bg-surface p-4 font-sans text-sm text-bad" role="alert">
                 <p>
                   Sorry — <strong>{placeOrder.error.body.isbn ?? "one of these books"}</strong>{" "}
                   only has {placeOrder.error.body.available ?? 0}{" "}
@@ -100,7 +99,7 @@ export default function Checkout() {
 
           {placeOrder.isError &&
             !(placeOrder.error instanceof ApiClientError && placeOrder.error.isOutOfStock) && (
-              <p className={styles.error} role="alert">
+              <p className="font-sans text-sm text-bad" role="alert">
                 Placing the order failed: {placeOrder.error.message}
               </p>
             )}
