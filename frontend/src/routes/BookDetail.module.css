@@ -1,0 +1,30 @@
+.page {
+  max-width: 34rem;
+}
+
+.author {
+  margin: 0 0 1.25rem;
+  font-family: system-ui, sans-serif;
+  color: var(--mid);
+}
+
+.priceRow {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.price {
+  font-size: 1.4rem;
+  font-weight: 600;
+}
+
+.status {
+  font-family: system-ui, sans-serif;
+  color: var(--mid);
+}
+
+.status--error {
+  color: var(--bad);
+}
