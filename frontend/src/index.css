@@ -1,0 +1,152 @@
+/* Foundation styles only: reset, tokens, shell, and shared primitives.
+   Route-specific styling belongs in a CSS module beside the route. */
+
+:root {
+  --ground: #faf9f7;
+  --surface: #ffffff;
+  --ink: #1a1a18;
+  --ink-soft: #4a4a45;
+  --mid: #77776f;
+  --rule: #e2e0da;
+  --accent: #7a3b2e;
+  --accent-soft: #f2e9e6;
+  --good: #2f6f4f;
+  --warn: #9a6b1f;
+  --bad: #8c3a2e;
+  --radius: 3px;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --ground: #161614;
+    --surface: #1d1c1a;
+    --ink: #ece9e4;
+    --ink-soft: #c2beb6;
+    --mid: #8d8a82;
+    --rule: #2f2d29;
+    --accent: #cd8574;
+    --accent-soft: #2a1e1a;
+    --good: #6fbe93;
+    --warn: #d6a44f;
+    --bad: #d08272;
+  }
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--ground);
+  color: var(--ink);
+  font-family: "Iowan Old Style", Georgia, serif;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+.shell {
+  max-width: 64rem;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.masthead {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1.5rem;
+  padding: 2rem 0 1.25rem;
+  border-bottom: 1px solid var(--rule);
+}
+
+.wordmark {
+  font-size: 1.5rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+  text-decoration: none;
+}
+
+.masthead nav {
+  display: flex;
+  gap: 1.25rem;
+  font-family: system-ui, sans-serif;
+  font-size: 0.9rem;
+}
+
+.masthead nav a,
+a {
+  color: var(--accent);
+}
+
+main {
+  flex: 1;
+  padding: 2.5rem 0 4rem;
+}
+
+footer {
+  padding: 1.5rem 0;
+  border-top: 1px solid var(--rule);
+  font-family: system-ui, sans-serif;
+  font-size: 0.82rem;
+  color: var(--mid);
+}
+
+footer p {
+  margin: 0;
+}
+
+.placeholder {
+  color: var(--mid);
+  font-family: system-ui, sans-serif;
+}
+
+/* Shared primitives - route agents may use these rather than reinventing. */
+
+.stock {
+  font-family: system-ui, sans-serif;
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+.stock--in { color: var(--good); }
+.stock--low { color: var(--warn); }
+.stock--out { color: var(--bad); }
+
+.price {
+  font-variant-numeric: tabular-nums;
+}
+
+button {
+  font: inherit;
+  font-family: system-ui, sans-serif;
+  font-size: 0.9rem;
+  padding: 0.5rem 1rem;
+  border: 1px solid var(--accent);
+  border-radius: var(--radius);
+  background: var(--accent);
+  color: var(--surface);
+  cursor: pointer;
+}
+
+button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+button.secondary {
+  background: transparent;
+  color: var(--accent);
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation: none !important; transition: none !important; }
+}
