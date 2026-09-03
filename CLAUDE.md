@@ -83,3 +83,26 @@ them before trusting them in a clone. `/hooks` lists and disables them.
 
 The test hook currently runs Maven against `library-tracker/`. It needs
 repointing at `backend/` when that exists.
+
+## End-to-end tests
+
+```bash
+cd frontend && npm run e2e        # headless
+cd frontend && npm run e2e:ui     # watch it drive the browser
+```
+
+Playwright starts both the API and the dev server itself — don't start them
+first. Locally it reuses servers that are already running, which will silently
+test **stale backend code** after a Java change; kill them first if you have
+just edited the backend. CI always starts fresh.
+
+These are the only tests that cross the frontend/backend seam, which is where
+every real bug in this project has lived so far: field-name mismatches that
+TypeScript can't see because JSON is cast rather than validated, and
+lazy-loading failures that unit tests miss because they mock Hibernate away.
+When you change a DTO field name, expect an e2e failure and treat it as the
+test working.
+
+They run against a live database and **actually buy books**, so stock changes.
+H2 is in-memory and rebuilt on every boot, so a fresh run always starts from
+the same seeded catalogue.

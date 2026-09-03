@@ -48,8 +48,8 @@ class CartServiceTest {
 
         CartResponse response = cartService.getCart(1L);
 
-        assertThat(response.items()).hasSize(1);
-        CartLineResponse line = response.items().get(0);
+        assertThat(response.lines()).hasSize(1);
+        CartLineResponse line = response.lines().get(0);
         assertThat(line.isbn()).isEqualTo(book.getIsbn());
         assertThat(line.title()).isEqualTo(book.getTitle());
         assertThat(line.author()).isEqualTo(book.getAuthor());
@@ -73,8 +73,8 @@ class CartServiceTest {
 
         CartResponse response = cartService.addItem(1L, new AddItemRequest(book.getIsbn(), 3));
 
-        assertThat(response.items()).hasSize(1);
-        assertThat(response.items().get(0).quantity()).isEqualTo(3);
+        assertThat(response.lines()).hasSize(1);
+        assertThat(response.lines().get(0).quantity()).isEqualTo(3);
         verify(cartRepository).save(cart);
     }
 
@@ -86,8 +86,8 @@ class CartServiceTest {
 
         CartResponse response = cartService.addItem(1L, new AddItemRequest(book.getIsbn(), 3));
 
-        assertThat(response.items()).hasSize(1);
-        assertThat(response.items().get(0).quantity()).isEqualTo(5);
+        assertThat(response.lines()).hasSize(1);
+        assertThat(response.lines().get(0).quantity()).isEqualTo(5);
     }
 
     @Test
@@ -99,8 +99,8 @@ class CartServiceTest {
         CartResponse response = cartService.setQuantity(1L, book.getIsbn(),
                 new SetQuantityRequest(2));
 
-        assertThat(response.items()).hasSize(1);
-        assertThat(response.items().get(0).quantity()).isEqualTo(2);
+        assertThat(response.lines()).hasSize(1);
+        assertThat(response.lines().get(0).quantity()).isEqualTo(2);
         assertThat(response.total()).isEqualByComparingTo("90.00");
     }
 
@@ -113,7 +113,7 @@ class CartServiceTest {
         CartResponse response = cartService.setQuantity(1L, book.getIsbn(),
                 new SetQuantityRequest(4));
 
-        assertThat(response.items().get(0).quantity()).isEqualTo(4);
+        assertThat(response.lines().get(0).quantity()).isEqualTo(4);
     }
 
     @Test
@@ -176,7 +176,7 @@ class CartServiceTest {
 
         CartResponse response = cartService.removeItem(1L, book.getIsbn());
 
-        assertThat(response.items()).isEmpty();
+        assertThat(response.lines()).isEmpty();
         assertThat(response.total()).isEqualByComparingTo(BigDecimal.ZERO);
         verify(cartRepository).save(cart);
     }

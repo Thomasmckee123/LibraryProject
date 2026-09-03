@@ -1,14 +1,24 @@
-import { useParams } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
+import { Link, useParams } from "react-router-dom";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { getBook } from "../api/books";
+import { addItem } from "../api/cart";
 import { ApiClientError } from "../api/client";
 import { formatPrice } from "../api/money";
 import StockBadge from "../components/StockBadge";
 import styles from "./BookDetail.module.css";
 
 /** One book, at "/books/:isbn": title, author, price, stock, add to cart. */
+// No auth yet, so there is one shared cart. TODO: replace with a session.
+const CART_ID = 1;
+
 export default function BookDetail() {
   const { isbn } = useParams<{ isbn: string }>();
+  const queryClient = useQueryClient();
+
+  const addToCart = useMutation({
+    mutationFn: () => addItem(CART_ID, isbn!, 1),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["cart", CART_ID] }),
+  });
 
   const {
     data: book,
@@ -60,14 +70,22 @@ export default function BookDetail() {
       </div>
       <button
         type="button"
-        disabled={book.stock === 0}
-        onClick={() => {
-          // TODO(cart-agent): wire this up once api/cart.ts exists. Owned by
-          // the agent building the cart/checkout experience - not this one.
-        }}
+        disabled={book.stock === 0 || addToCart.isPending}
+        onClick={() => addToCart.mutate()}
       >
-        Add to cart
+        {addToCart.isPending ? "Adding..." : "Add to cart"}
       </button>
+
+      {addToCart.isSuccess && (
+        <p className={styles.added} role="status">
+          Added to your cart. <Link to="/cart">View cart</Link>
+        </p>
+      )}
+      {addToCart.isError && (
+        <p className={styles.addError} role="alert">
+          Could not add that to your cart. Please try again.
+        </p>
+      )}
     </section>
   );
 }
