@@ -11,6 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.security.SecureRandom;
 import java.time.Instant;
+import java.util.List;
 
 /**
  * Turns a cart into a paid order.
@@ -76,6 +77,26 @@ public class CheckoutService {
         Order order = orderRepository.findById(id)
                 .orElseThrow(() -> NotFoundException.order(id));
         return OrderResponse.from(order);
+    }
+
+    /**
+     * A customer's orders, newest first.
+     *
+     * <p>{@code @Transactional(readOnly = true)} is doing real work here, not
+     * decoration. {@code Order.lines} is lazy, and {@link OrderResponse#from}
+     * walks it - so the mapping has to happen while the Hibernate session is
+     * still open. Returning the entities and mapping in the controller would
+     * compile, then fail at JSON time with a lazy-initialisation error.
+     *
+     * <p>Returns full orders rather than a lighter summary DTO: one shape for
+     * one concept is easier to follow, and the list page gets its item counts
+     * for free. Worth revisiting if a customer ever has hundreds of orders.
+     */
+    @Transactional(readOnly = true)
+    public List<OrderResponse> findOrdersForCustomer(Long customerId) {
+        return orderRepository.findByCustomerIdOrderByPlacedAtDesc(customerId).stream()
+                .map(OrderResponse::from)
+                .toList();
     }
 
     /** A fake payment confirmation - see backend/CLAUDE.md, payments are simulated. */

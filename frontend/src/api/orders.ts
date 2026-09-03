@@ -13,3 +13,14 @@ export function checkout(cartId: number): Promise<Order> {
 export function getOrder(id: number): Promise<Order> {
   return api.get<Order>(`/orders/${id}`);
 }
+
+/**
+ * A customer's past orders, newest first.
+ *
+ * customerId is passed explicitly because there are no sessions yet (issue
+ * #17) - the backend has no way to know who is asking. When accounts land,
+ * this argument goes away and the server reads it from the session.
+ */
+export function listOrders(customerId: number): Promise<Order[]> {
+  return api.get<Order[]>(`/orders?customerId=${customerId}`);
+}

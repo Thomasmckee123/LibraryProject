@@ -20,6 +20,9 @@ export default function App() {
           <NavLink to="/cart" className={navLink}>
             Cart
           </NavLink>
+          <NavLink to="/orders" end className={navLink}>
+            Orders
+          </NavLink>
         </nav>
       </header>
 

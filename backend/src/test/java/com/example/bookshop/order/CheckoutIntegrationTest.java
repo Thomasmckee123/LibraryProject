@@ -169,4 +169,74 @@ class CheckoutIntegrationTest {
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
     }
+
+    /**
+     * The list endpoint has to freeze prices for the same reason the single
+     * order endpoint does. It is a separate code path, so it gets its own
+     * assertion rather than trusting that
+     * {@link #priceChangeAfterCheckoutDoesNotAlterOrderTotal()} covers it -
+     * a list built by joining back to Book would pass that test and fail
+     * this one.
+     */
+    @Test
+    void listedOrdersKeepTheirPricesWhenTheBookIsRepriced() {
+        Customer customer = customerRepository.save(new Customer("Ada Lovelace", "ada@example.com"));
+        Book book = bookRepository.save(
+                new Book("9990000000004", "Analytical Engine", "Ada Lovelace", new BigDecimal("30.00"), 5));
+
+        Cart cart = new Cart(customer);
+        cart.addItem(book, 2);
+        cart = cartRepository.save(cart);
+
+        ResponseEntity<OrderResponse> checkout = restTemplate.postForEntity(
+                "/api/carts/" + cart.getId() + "/checkout", null, OrderResponse.class);
+        assertThat(checkout.getStatusCode()).isEqualTo(HttpStatus.CREATED);
+
+        Book reloaded = bookRepository.findById(book.getId()).orElseThrow();
+        reloaded.setPrice(new BigDecimal("1.00"));
+        bookRepository.save(reloaded);
+
+        ResponseEntity<OrderResponse[]> listed = restTemplate.getForEntity(
+                "/api/orders?customerId=" + customer.getId(), OrderResponse[].class);
+
+        assertThat(listed.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(listed.getBody()).hasSize(1);
+        assertThat(listed.getBody()[0].total()).isEqualByComparingTo(new BigDecimal("60.00"));
+        assertThat(listed.getBody()[0].lines().get(0).unitPrice())
+                .isEqualByComparingTo(new BigDecimal("30.00"));
+    }
+
+    @Test
+    void listedOrdersComeBackNewestFirstAndOnlyForThatCustomer() {
+        Customer mine = customerRepository.save(new Customer("Alan Turing", "alan@example.com"));
+        Customer theirs = customerRepository.save(new Customer("Someone Else", "else@example.com"));
+        Book book = bookRepository.save(
+                new Book("9990000000005", "On Computable Numbers", "Alan Turing", new BigDecimal("11.00"), 20));
+
+        String firstReference = placeOrder(mine, book, 1).reference();
+        String secondReference = placeOrder(mine, book, 2).reference();
+        String othersReference = placeOrder(theirs, book, 1).reference();
+
+        ResponseEntity<OrderResponse[]> listed = restTemplate.getForEntity(
+                "/api/orders?customerId=" + mine.getId(), OrderResponse[].class);
+
+        assertThat(listed.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(listed.getBody()).hasSize(2);
+        assertThat(listed.getBody())
+                .extracting(OrderResponse::reference)
+                .containsExactly(secondReference, firstReference)
+                .doesNotContain(othersReference);
+    }
+
+    /** Places one order the way a customer would - through checkout, not by writing an Order. */
+    private OrderResponse placeOrder(Customer customer, Book book, int quantity) {
+        Cart cart = new Cart(customer);
+        cart.addItem(book, quantity);
+        cart = cartRepository.save(cart);
+
+        ResponseEntity<OrderResponse> response = restTemplate.postForEntity(
+                "/api/carts/" + cart.getId() + "/checkout", null, OrderResponse.class);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CREATED);
+        return response.getBody();
+    }
 }
