@@ -1,0 +1,37 @@
+.page h1 {
+  margin: 0 0 1.5rem;
+}
+
+.search {
+  display: block;
+  width: 100%;
+  max-width: 24rem;
+  margin-bottom: 2rem;
+  padding: 0.6rem 0.85rem;
+  font: inherit;
+  font-family: system-ui, sans-serif;
+  font-size: 0.95rem;
+  color: var(--ink);
+  background: var(--surface);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+}
+
+.search::placeholder {
+  color: var(--mid);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr));
+  gap: 1.25rem;
+}
+
+.status {
+  font-family: system-ui, sans-serif;
+  color: var(--mid);
+}
+
+.status--error {
+  color: var(--bad);
+}
