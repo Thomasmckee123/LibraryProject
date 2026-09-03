@@ -26,25 +26,52 @@ config file or `npx tailwindcss init`, you are following v3 instructions.
 @import "tailwindcss";
 
 @theme {
-  --color-ink: #1a1a18;
-  --color-accent: #7a3b2e;
+  --color-paper: #efede4;   /* light palette lives here */
+  --color-accent: #2a4b7c;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {                    /* dark overrides plain custom properties */
+    --color-paper: #14171c;
+    --color-accent: #86aade;
+  }
 }
 ```
 
-Every token in `@theme` becomes a utility automatically — `--color-ink` gives
-you `text-ink`, `bg-ink`, `border-ink`. Do not hand-write a utility for a value
-that should be a token.
+Every token in `@theme` becomes a utility automatically — `--color-paper` gives
+you `text-paper`, `bg-paper`, `border-paper`. Do not hand-write a utility for a
+value that should be a token.
+
+**Never put `@theme` inside a media query.** It is processed at build time and
+is not conditional, so it overwrites the base values unconditionally rather
+than applying only in that media context. This shipped once and made the light
+theme unreachable — the whole site rendered dark regardless of OS setting.
+Declare the light palette in `@theme`, then override the plain custom
+properties on `:root` inside the media query, as above. Utilities resolve
+through `var()`, so they follow automatically.
+
+Verify theme changes by rendering both, not by reading the CSS:
+
+```js
+// colorScheme: "light" | "dark" in a Playwright newPage()
+const bg = await page.evaluate(() => getComputedStyle(document.body).backgroundColor);
+```
 
 ## Design tokens
 
 Defined once in `src/index.css`. **Never hardcode a colour in a component.**
 
+The palette is taken from bookbinding: marbled endpaper indigo as the brand,
+gilt foil stamping, oxblood for error, and a laid-paper ground rather than
+cream. Dark is a cloth board under lamplight — blue-black, never neutral black.
+
 | Token | Use |
 |---|---|
-| `paper` / `surface` | Page ground, card ground |
+| `paper` / `surface` / `sunk` | Page ground, card ground, recessed wells |
 | `ink` / `ink-soft` / `muted` | Primary text, secondary text, captions |
-| `rule` | Borders and dividers |
-| `accent` / `accent-soft` | Brand; links, primary buttons |
+| `rule` / `rule-strong` | Borders and dividers |
+| `accent` / `accent-soft` | Marbled indigo — links, primary buttons |
+| `gilt` | Foil stamping. Decorative edges and hover states only |
 | `good` / `warn` / `bad` | In stock / low stock / out of stock and errors |
 
 Semantic state colours are separate from `accent` and must stay that way — a
