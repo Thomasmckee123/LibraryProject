@@ -9,7 +9,7 @@ const navLink = ({ isActive }: { isActive: boolean }) =>
 export default function App() {
   return (
     <div className="mx-auto flex min-h-screen max-w-6xl flex-col px-6">
-      <header className="flex items-baseline justify-between gap-6 border-b border-rule py-8">
+      <header className="gilt-rule flex items-baseline justify-between gap-6 py-8">
         <Link to="/" className="text-2xl font-semibold tracking-tight text-ink">
           The Bindery
         </Link>
