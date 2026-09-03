@@ -1,0 +1,60 @@
+.summary {
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+  background: var(--surface);
+}
+
+.lines {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.line {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 1rem;
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--rule);
+}
+
+.lineInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  min-width: 0;
+}
+
+.lineTitle {
+  color: var(--ink);
+}
+
+.lineAuthor,
+.lineQty {
+  font-family: system-ui, sans-serif;
+  font-size: 0.8rem;
+  color: var(--mid);
+}
+
+.lineTotal {
+  white-space: nowrap;
+  font-weight: 500;
+}
+
+.totalRow {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.85rem 1rem;
+  font-weight: 600;
+  font-family: system-ui, sans-serif;
+}
+
+.total {
+  font-size: 1.05rem;
+}
+
+.empty {
+  color: var(--mid);
+  font-family: system-ui, sans-serif;
+}
