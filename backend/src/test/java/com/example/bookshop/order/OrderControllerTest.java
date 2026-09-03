@@ -102,4 +102,41 @@ class OrderControllerTest {
         mockMvc.perform(get("/api/orders/999"))
                 .andExpect(status().isNotFound());
     }
+
+    @Test
+    void listOrdersReturnsCustomersOrdersNewestFirst() throws Exception {
+        OrderResponse newer = new OrderResponse(
+                9L, "BND-NEWER000", 7L, OrderStatus.PAID,
+                Instant.parse("2026-09-02T10:00:00Z"),
+                new BigDecimal("6.50"),
+                List.of(new OrderLineResponse("222", "Emma", new BigDecimal("6.50"), 1, new BigDecimal("6.50"))));
+        OrderResponse older = new OrderResponse(
+                4L, "BND-OLDER000", 7L, OrderStatus.PAID,
+                Instant.parse("2026-08-01T10:00:00Z"),
+                new BigDecimal("19.98"),
+                List.of(new OrderLineResponse("111", "Dune", new BigDecimal("9.99"), 2, new BigDecimal("19.98"))));
+        when(checkoutService.findOrdersForCustomer(7L)).thenReturn(List.of(newer, older));
+
+        mockMvc.perform(get("/api/orders?customerId=7"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(2))
+                .andExpect(jsonPath("$[0].reference").value("BND-NEWER000"))
+                .andExpect(jsonPath("$[1].reference").value("BND-OLDER000"))
+                .andExpect(jsonPath("$[0].lines[0].titleAtPurchase").value("Emma"));
+    }
+
+    @Test
+    void listOrdersReturnsEmptyArrayForACustomerWhoHasNeverOrdered() throws Exception {
+        when(checkoutService.findOrdersForCustomer(8L)).thenReturn(List.of());
+
+        mockMvc.perform(get("/api/orders?customerId=8"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(0));
+    }
+
+    @Test
+    void listOrdersWithoutACustomerIdReturns400() throws Exception {
+        mockMvc.perform(get("/api/orders"))
+                .andExpect(status().isBadRequest());
+    }
 }

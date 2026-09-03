@@ -44,6 +44,7 @@ DELETE /api/carts/{id}/items/{isbn}
 GET    /api/carts/{id}            cart with line totals
 POST   /api/carts/{id}/checkout   → Order, or 409 if stock is short
 GET    /api/orders/{id}           one order
+GET    /api/orders?customerId=    that customer's orders, newest first
 ```
 
 Money is `BigDecimal`, never `double` — binary floating point cannot

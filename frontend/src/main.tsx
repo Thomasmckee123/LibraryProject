@@ -8,6 +8,7 @@ import Catalogue from "./routes/Catalogue";
 import BookDetail from "./routes/BookDetail";
 import Cart from "./routes/Cart";
 import Checkout from "./routes/Checkout";
+import Orders from "./routes/Orders";
 import OrderConfirmed from "./routes/OrderConfirmed";
 import NotFound from "./routes/NotFound";
 import "./index.css";
@@ -23,6 +24,7 @@ const router = createBrowserRouter([
       { path: "books/:isbn", element: <BookDetail /> },
       { path: "cart", element: <Cart /> },
       { path: "checkout", element: <Checkout /> },
+      { path: "orders", element: <Orders /> },
       { path: "orders/:reference", element: <OrderConfirmed /> },
       { path: "*", element: <NotFound /> },
     ],

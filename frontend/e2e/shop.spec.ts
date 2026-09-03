@@ -131,3 +131,44 @@ test("checkout refuses an order larger than stock and explains why", async ({
   await expect(alert).toContainText("3");
   await expect(page).not.toHaveURL(/\/orders\//);
 });
+
+test("a placed order appears in the order history and opens from there", async ({
+  page,
+  request,
+}) => {
+  await request.post("/api/carts/1/items", {
+    data: { isbn: DUNE, quantity: 1 },
+  });
+
+  await page.goto("/checkout");
+  await page.getByRole("button", { name: /place order/i }).click();
+  await expect(page).toHaveURL(/\/orders\/\d+$/);
+
+  // Capture the reference the confirmation screen showed, then navigate away
+  // entirely - the point of the history page is finding it again afterwards.
+  const reference = await page.getByText(/BND-/).innerText();
+
+  await page.goto("/");
+  await page.getByRole("link", { name: "Orders" }).click();
+  await expect(page).toHaveURL(/\/orders$/);
+
+  const row = page.getByRole("link", { name: new RegExp(reference) });
+  await expect(row).toBeVisible();
+  await expect(row).toContainText("£9.99");
+  await expect(row).toContainText("1 book");
+
+  // The row links back to the order it summarises.
+  await row.click();
+  await expect(page).toHaveURL(/\/orders\/\d+$/);
+  await expect(page.getByText(reference)).toBeVisible();
+  await expect(page.getByText("Dune").first()).toBeVisible();
+});
+
+test("order history says so when there is nothing to show", async ({ page }) => {
+  // The seeded demo customer is id 1; id 2 has never ordered, so this asks the
+  // API directly rather than going through the page's hardcoded customer.
+  const empty = await page.request.get("/api/orders?customerId=2");
+  expect(empty.ok()).toBeTruthy();
+  expect(await empty.json()).toEqual([]);
+});
+
